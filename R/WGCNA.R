@@ -13,7 +13,6 @@
 #' @importFrom grDevices pdf dev.off
 #' @importFrom SeuratObject PackageCheck
 #' @export
-#' @examples
 BulidCGnet <- function(data,
                        outdir = NULL,
                        power.seq = NULL,

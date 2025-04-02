@@ -14,10 +14,7 @@ default.colors <- c("#336699", "#679436", "#f4a261", "#70a288","#b95b13","#26465
 #'   sequentially or randomly.
 #' @return A vector of colors named with labels
 #' @export
-#'
-#' @examples
-#' x <- c("A", "B", "C", "D")
-#' cols <- LabelMapcolor(x, assgin.col = c(A = "red"))
+
 LabelMapcolor <- function(labels,
                           na.col = "grey",
                           assgin.col = NULL,
@@ -97,7 +94,6 @@ LabelMapcolor <- function(labels,
 #'
 #' @return A ggplot object if \code{return = TRUE}.
 #' @export
-#' @examples
 #' @importFrom ggplot2 ggplot aes geom_point theme_void coord_fixed labs theme
 #'   scale_y_reverse scale_x_reverse scale_colour_gradientn scale_color_manual
 #'   element_text
@@ -210,7 +206,6 @@ SpotVisualize <- function(st = NULL , pos = NULL, meta = NULL, feature = NULL, s
 #'   element_text
 #' @importFrom grDevices pdf dev.off
 #' @export
-#' @examples
 AbunTNIPlot <- function(abun, label,
                          l_nshow,
                          st = NULL,
@@ -253,10 +248,13 @@ AbunTNIPlot <- function(abun, label,
     gp = gp + scale_x_reverse()
   }
   mid.p <- ifelse(is.null(limits), NA, max(limits)/2)
+  TNI.label <- setdiff(unique(label), l_nshow)
+  col <- c(line_col, NA)
+  names(col) <- c(TNI.label, l_nshow)
   p <- gp + geom_point(aes(color = label, fill = abun, stroke = stroke),
                            size = size, shape = shape) +
     scale_fill_gradientn(colors = f.color, limits = limits) +
-    scale_color_manual(values = line_col)
+    scale_color_manual(values = col)
   if (! is.null(savefile)) {
     pdf(savefile, height = p.height, width = p.width)
     print(p)
@@ -304,7 +302,6 @@ AbunTNIPlot <- function(abun, label,
 #'   element_text
 #'   scale_fill_manual
 #' @importFrom grDevices pdf dev.off
-#' @examples
 PlotCellSpot = function(decon_mtrx,
                         st_pos,
                         tarCells = NULL,

@@ -17,7 +17,7 @@ Count2TPM <- function(counts,geneLen) {
 #'
 #' @return A data.frame with pre-processed expression profiles.
 #' @export
-#' @examples
+
 NMF_bulk_input <- function(data,
                            totpm = F,
                            genelen = NULL,
@@ -63,7 +63,7 @@ NMF_bulk_input <- function(data,
 #'   cophenetic coefficients; else, return an object of class NMFfit.
 #' @export
 #' @import NMF
-#' @examples
+
 RunNMFtest <- function(expr,
                      rank,
                      nrun = 30,
@@ -156,7 +156,7 @@ biggest_drop <- function(x, min_cophenetic = 0.95)
 #' @return A character vector represent association between phenotype and factors.
 #' @export
 #'
-#' @examples
+
 HPhenoAsso <- function(nmfobj, phenotype, method, ...){
   train_H <- nmfobj@fit@H
   asso_res <- PhenoAssoFeatures(data = train_H,
@@ -278,7 +278,7 @@ NMFpredict <- function(W, new_data)
 #' @importFrom cowplot plot_grid
 #' @importFrom grDevices pdf dev.off
 #' @importFrom Seurat GetAssayData
-#' @examples
+
 PredNMFinST <- function(st,
                         W,
                         assay = "SCT",
@@ -335,7 +335,7 @@ PredNMFinST <- function(st,
 #' @return A vector of factors named with meta-genes.
 #' @export
 #'
-#' @examples
+
 FactorMetagenes <- function(ref_W,
                             top_num = 200){
   # sd_n :1.96sd: 0.01 pvalue; 1.65sd:0.1 pvalue
@@ -370,7 +370,7 @@ FactorMetagenes <- function(ref_W,
 #' @return A compareClusterResult object.
 #' @export
 #'
-#' @examples
+
 FactorEnrichAnalysis <- function(mg_vt,
                                  fun = "enrichGO",
                                  plot = T,

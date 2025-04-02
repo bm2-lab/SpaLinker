@@ -1,4 +1,4 @@
-# Internal function to find neighbors for each spot within given clusters
+#' Internal function to find neighbors for each spot within given clusters
 #' @param st_pos A data.frame with coordinate information in two columns.
 #' @param cluster Cluster labels of spots.
 #' @param r.dist A numeric value. Distance to define the neighboring spots. Default
@@ -8,16 +8,46 @@
 #' @return List or matrix.
 FindNeispots <- function(st_pos,
                          cluster = NULL,
+                         method = "dist",
                          r.dist = 2,
+                         p = NULL,
                          return.list = T){
-  dist.mtrx <- as.matrix(dist(st_pos))
-  dist.mtrx <- round(dist.mtrx, digits = 2)
-  spot.nei <- foreach(i = rownames(dist.mtrx), .combine = "rbind") %do% {
-    d <- dist.mtrx[i, ]
-    data.frame(spot1 = i,
-          spot2 = rownames(dist.mtrx)[which(d <= r.dist)],
-          dist = d[d <= r.dist])
+  if (! is.null(p)){
+    if ( !PackageCheck("doParallel")){
+      stop("Please install package: doSNOW or set verbose to FALSE")
+    } else {
+      suppressMessages({cl = makeCluster(p)
+      registerDoParallel(cl)})
+      `%myinfix%` <- `%dopar%`
+    }
+  } else {
+    `%myinfix%` <- `%do%`
   }
+  library(foreach)
+  if (method == "dist") {
+    dist.mtrx <- as.matrix(dist(st_pos))
+    dist.mtrx <- round(dist.mtrx, digits = 2)
+    spot.nei <- foreach(i = rownames(dist.mtrx), .combine = "rbind") %myinfix% {
+      d <- dist.mtrx[i, ]
+      data.frame(spot1 = i,
+                 spot2 = rownames(dist.mtrx)[which(d <= r.dist)],
+                 dist = d[d <= r.dist])
+    }
+  }
+  if (method == "bin"){
+    st_pos <- st_pos %>%  
+      mutate(  
+        x_min = pmax(x - r.dist, min(x)),  
+        x_max = pmin(x + r.dist, max(x)),  
+        y_min = pmax(y - r.dist, min(y)),  
+        y_max = pmin(y + r.dist, max(y))  
+      )
+    spot.nei <- foreach::foreach(i = rownames(st_pos), .combine = "rbind") %myinfix% {
+        data.frame(spot1 = i,
+                   spot2 = rownames(st_pos)[st_pos$x >= st_pos[i,"x_min"] & st_pos$x <= st_pos[i,"x_max"] &  
+                                              st_pos$y >= st_pos[i,"y_min"] & st_pos$y <= st_pos[i,"y_max"] ])
+      }
+    }
   rownames(spot.nei) <- NULL
   if ( ! is.null(cluster)) {
     if (is.null(names(cluster))) {
@@ -28,14 +58,18 @@ FindNeispots <- function(st_pos,
   if ( return.list) {
     spot.nei <- split(x = spot.nei$spot2,
                       f = spot.nei$spot1)
-    }
+  }
+  if (! is.null(p)){
+    stopImplicitCluster()
+    stopCluster(cl)
+  }
   return(spot.nei)
 }
 
-# Internal function to get weights based on distance.
-# @param d A numeric vector of distance.
-# @param adjust Adjustment of weights.
-# @return A vector of weights named with distance (d).
+#' Internal function to get weights based on distance.
+#' @param d A numeric vector of distance.
+#' @param adjust Adjustment of weights.
+#' @return A vector of weights named with distance (d).
 KernelWeight <- function(d,
                          adjust = 1){
   if (length(d) == 1) {

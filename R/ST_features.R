@@ -30,7 +30,7 @@ setClass("STFeature",
 #' @return A STFeature object.
 #' @export
 #' @importFrom Seurat GetAssayData
-#' @examples
+
 CreateStfObj <- function(st,
                          stf = NULL,
                          assay = "SCT",
@@ -110,7 +110,7 @@ CalEntropy <- function(x, base = 2){
 #' @return A data.frame containing two columns: Imm.diversity and
 #'   Imm.infiltration
 #' @export
-#' @examples
+
 CalImmInfiltration <- function(data,
                                base = 2,
                                min.prop = 0.05){
@@ -134,7 +134,7 @@ CalImmInfiltration <- function(data,
 #' @param sort Logical value indicating whether to sort the names of cells.
 #' @return A data.frame of co-distribution scores for all cell-cell pairs.
 #' @export
-#' @examples
+
 CalCellCodis <- function(data, sort = T){
   data <- Norm01(data)
   CellCodis <- combn(x = colnames(data),
@@ -221,6 +221,7 @@ GsetScore <- function(expr,
     temp <- CreateSeuratObject(counts = expr)
     n1 <- ncol(temp@meta.data)
     temp <- suppressWarnings(AddModuleScore(temp,
+                                            assay = "RNA", slot = "counts",
                                             features = geneset2,
                                             name = names(geneset2),
                                             verbose = verbose))
@@ -281,13 +282,10 @@ GsetScore <- function(expr,
 #' Gene set types in MSigDB.
 #' @return A character vector represents types of gene sets in "MSigDB" database.
 #' @export
-#'
-#' @examples
-#' msigdb_types()
 msigdb_types <- function(){
   msigdb_type <- c(HALLMARK = "H",
                    KEGG = "C2",
-                   REATOME = "C2",
+                   REACTOME = "C2",
                    MOTIF = "C3",
                    BIOCARTA = "C2",
                    "GO:BP" = "C5",
@@ -298,6 +296,7 @@ msigdb_types <- function(){
                    "TFT:TFT_Legacy" = "C3")
   return(msigdb_type)
 }
+
 #' Getting gene sets and accessing enrichment scores.
 #' @description SpaLinker enables exploration of signatures or gene sets collected
 #'   from literatures and databases.
@@ -320,7 +319,7 @@ msigdb_types <- function(){
 #'   return stf with \code{GsetSig} slot added.
 #' @export
 #' @importFrom msigdbr msigdbr
-#' @examples
+
 GetGsetSigScore <- function(expr,
                             stf = NULL,
                             category = "CuratedSig",
@@ -369,9 +368,6 @@ GetGsetSigScore <- function(expr,
       stop("Please provide correct subtypes for MSigDB! Check it using msigdb_types()")
     }
     for(type in types){
-      if (type %in% c("BIOCARTA", "KEGG", "REACTOME")) {
-        type <- paste0("CP:", type)
-      }
       if (verbose) {
         message(paste0("Calculating ",type , " geneset"))
       }

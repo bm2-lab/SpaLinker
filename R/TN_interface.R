@@ -40,7 +40,7 @@ FiltConnectGraph <- function(st_pos,
                       return.list = F)
     g <- graph_from_data_frame(d = d,
                                vertices = data.frame(name = rownames(st_pos)))
-    comp <- components(g)$membership
+    comp <- igraph::components(g)$membership
     comp <- split(names(comp), comp)
     keep_g <- comp[sapply(comp, length) >= min.spots]
     if (! is.null(spot_class)){
@@ -65,16 +65,20 @@ FiltConnectGraph <- function(st_pos,
 #'   within smaple to range 0-1.
 #' @return A vector of TNI scores.
 #' @export
-#' @examples
+
 TNIscore <- function(ES,
                        st_pos,
                        cluster = NULL,
                        r.dist = 2,
+                       nei.method = "dist",
+                       p = NULL,
                        norm01 = F){
   names(ES) <- rownames(st_pos)
   reg.lt <- FindNeispots(st_pos,
                          r.dist = r.dist,
                          cluster = NULL,
+                         method = nei.method,
+                         p = p,
                          return.list = T)
   reg.lt <- reg.lt[names(ES)]
   I.score <- foreach(i = reg.lt, .combine = "c") %do%{
@@ -96,8 +100,9 @@ TNIscore <- function(ES,
     range <- foreach(i = reg.lt, .combine = "c") %do%{
       es <- sort(ES[i], decreasing = T)
       if (length(es) > 2){
-        up.es <- mean(es[1:2])
-        low.es <- mean(es[length(es)-1:length(es)])
+        half <- length(es) %/% 2
+        up.es <- mean(es[1:half])
+        low.es <- mean(es[(half+1) : length(es)])
         d <- (up.es - low.es)/exp(2*min(low.es))
       } else{
         d <- 0
@@ -136,7 +141,7 @@ TNIscore <- function(ES,
 #'
 #' @return A vector of labels named with spots.
 #' @export
-#' @examples
+
 DefineTNIregion <- function(x,
                      st_pos,
                      r.dist = 2,
@@ -159,8 +164,8 @@ DefineTNIregion <- function(x,
                          return.list = T)
   spotype <- ifelse(x > maxval,
                     "TNI",
-                    ifelse(x < minval, "nTNI", "candi"))
-  spotype <- factor(spotype, levels = c("TNI", "nTNI", "candi"))
+                    ifelse(x < minval, "nonTNI", "candi"))
+  spotype <- factor(spotype, levels = c("TNI", "nonTNI", "candi"))
   for (it in 1:max.iter.num){
     type.n.raw <- table(spotype)
     for (candi in names(spotype[spotype == "candi"])){
@@ -168,7 +173,7 @@ DefineTNIregion <- function(x,
       for (k in 1:candi.step) {
         nei <- unlist(reg.lt[nei.spots])
         nei.spots <- append(nei.spots,
-                            nei[spotype[nei] != "nTNI"])
+                            nei[spotype[nei] != "nonTNI"])
       }
       nei.spots <- unique(unlist(reg.lt[nei.spots]))
       boun.n <- sum(spotype[nei.spots] == "TNI")
@@ -183,7 +188,7 @@ DefineTNIregion <- function(x,
       type.n.raw = type.n.new
     }
   }
-  spotype[spotype == "candi"] = "nTNI"
+  spotype[spotype == "candi"] = "nonTNI"
   if (verbose) {
     print("removing unconnected TNI regions ...")
   }
@@ -202,13 +207,13 @@ DefineTNIregion <- function(x,
       print("Completing the identificaton of TNI spots !")
     }
   }
-  alltype <- rep("nTNI", nrow(st_pos))
+  alltype <- rep("nonTNI", nrow(st_pos))
   names(alltype) <- rownames(st_pos)
   alltype[final.edgespots] <- "TNI"
   return(alltype)
 }
 
-# Internal function to perform unsupervised clustering.
+#' Internal function to perform unsupervised clustering.
 #' @param x Numeric matrix of data.
 #' @param clu_num The number of cluster.
 #' @param method The method used for clustering. One of
@@ -264,7 +269,7 @@ UnsupCluster <- function(x,
 #' @importFrom fpc pamk
 #' @return A vector of TNI types named with spots.
 #' @export
-#' @examples
+
 GroupTNItypes <- function(TNI_pos,
                           cluster,
                           seed = 123,
@@ -326,15 +331,15 @@ GroupTNItypes <- function(TNI_pos,
 }
 #' Categories of TNI regions
 #'
-#' @param type A vector of type labels of TNI spots.
-#' @param cluster A vector of cluster labels of TNI spots.
+#' @param type A named vector of type labels.
+#' @param cluster A named vector of cluster. 
 #' @param ES Tumor cell abundances or other features representing the enrichment
 #'   of tumor cells.
 #'
 #' @return A vector of TNI categories named with spots.
 #' @export
 #'
-#' @examples
+
 TNIClass <- function(type, cluster, ES){
   types <- sort(unique(type))
   types <- types[types != "others"]

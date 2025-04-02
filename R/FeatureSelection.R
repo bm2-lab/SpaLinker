@@ -266,7 +266,6 @@ CorrTest <- function(data,
 #' @export
 #' @importFrom foreach foreach %do%
 #' @importFrom progressr with_progress without_progress
-#' @examples
 PhenoAssoFeatures <- function(data,
                               phenotype,
                               method,

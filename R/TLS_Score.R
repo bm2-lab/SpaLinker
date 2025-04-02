@@ -1,7 +1,7 @@
 #' Calculation of TLS scores. TLS features stored in
-#' @param data A data.frame should contain three TLS features, including
-#'   co-local scores of "Plasma/B.cells_T.cells" and enrichment scores of two
-#'   signatures: "LC.50sig", "imprint.65sig".
+#' @param data A data.frame contains two TLS features, including
+#'   co-local scores of "Plasma/B.cells_T.cells" and enrichment scores of TLS
+#'   signature "LC.50sig".
 #' @param st_pos A data.frame with coordinate information in two columns.
 #' @param cluster Cluster labels of spots.
 #' @param ... Arguments passed to other methods.
@@ -9,10 +9,13 @@
 #' @return Lists containing distinct forms of TLS features and the final TLS scores.
 #' @export
 #' @seealso [RegFeaEnrich]
-#' @examples
+
 CalTLSfea <- function(data,
                       st_pos,
                       cluster,
+                      cutoff = 0.2,
+                      filt.dist = 4,
+                      filt.spots = 2,
                       ...) {
   library(dplyr)
   library(foreach)
@@ -67,9 +70,19 @@ CalTLSfea <- function(data,
   rownames(signi.fea) <- rownames(unit.fea)
   colnames(signi.fea) <- colnames(unit.fea)
   TLS.score <- apply(signi.fea, 1, function(x)exp(mean(log(x))))
+  TLS.region <- ifelse(TLS.score >= cutoff, "TLS", "nonTLS")
+  # 
+  names(TLS.region) <- rownames(st_pos)
+  # filt
+  filt <- FiltConnectGraph(st_pos = st_pos[TLS.region == "TLS",],
+                          nei.dist = filt.dist,
+                          min.spots = filt.spots)
+  filt <- unlist(filt)
+  TLS.region[!names(TLS.region) %in% filt] <- "nonTLS"
   return(list(orig.fea = data,
               unit.fea = data.frame(unit.fea, check.names = F),
               random.fea = data.frame(random.fea, check.names = F),
               signi.fea = data.frame(signi.fea, check.names = F),
-              TLS.score = TLS.score))
+              TLS.score = TLS.score,
+              TLS.region = TLS.region))
 }
