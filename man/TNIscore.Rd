@@ -4,7 +4,15 @@
 \alias{TNIscore}
 \title{Tumor-normal interface (TNI) scores}
 \usage{
-TNIscore(ES, st_pos, cluster = NULL, r.dist = 2, norm01 = F)
+TNIscore(
+  ES,
+  st_pos,
+  cluster = NULL,
+  r.dist = 2,
+  nei.method = "dist",
+  p = NULL,
+  norm01 = F
+)
 }
 \arguments{
 \item{ES}{Tumor cell abundances or other features representing the enrichment

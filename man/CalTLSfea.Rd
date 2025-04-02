@@ -4,12 +4,20 @@
 \alias{CalTLSfea}
 \title{Calculation of TLS scores. TLS features stored in}
 \usage{
-CalTLSfea(data, st_pos, cluster, ...)
+CalTLSfea(
+  data,
+  st_pos,
+  cluster,
+  cutoff = 0.2,
+  filt.dist = 4,
+  filt.spots = 2,
+  ...
+)
 }
 \arguments{
-\item{data}{A data.frame should contain three TLS features, including
-co-local scores of "Plasma/B.cells_T.cells" and enrichment scores of two
-signatures: "LC.50sig", "imprint.65sig".}
+\item{data}{A data.frame contains two TLS features, including
+co-local scores of "Plasma/B.cells_T.cells" and enrichment scores of TLS
+signature "LC.50sig".}
 
 \item{st_pos}{A data.frame with coordinate information in two columns.}
 

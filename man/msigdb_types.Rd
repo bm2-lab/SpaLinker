@@ -12,6 +12,3 @@ A character vector represents types of gene sets in "MSigDB" database.
 \description{
 Gene set types in MSigDB.
 }
-\examples{
-msigdb_types()
-}

@@ -36,7 +36,3 @@ A vector of colors named with labels
 \description{
 Colors of labels.
 }
-\examples{
-x <- c("A", "B", "C", "D")
-cols <- LabelMapcolor(x, assgin.col = c(A = "red"))
-}

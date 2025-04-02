@@ -7,9 +7,9 @@
 TNIClass(type, cluster, ES)
 }
 \arguments{
-\item{type}{A vector of type labels of TNI spots.}
+\item{type}{A named vector of type labels.}
 
-\item{cluster}{A vector of cluster labels of TNI spots.}
+\item{cluster}{A named vector of cluster.}
 
 \item{ES}{Tumor cell abundances or other features representing the enrichment
 of tumor cells.}
