@@ -48,8 +48,7 @@ phenotype of samples.}
 
 \item{p.adj}{Logical value indicating whether to adjust the p values.}
 
-\item{deseq2_contrast}{Argument specifies the groups for comparison. It is
-passed to \code{results} function in \pkg{DESeq2}.}
+\item{deseq2_contrast}{The numerator level for fold change; only used for two groups are included.}
 
 \item{adj.method}{Method to adjust p values. It should be one of
 \code{c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY","fdr",
@@ -79,5 +78,6 @@ patients or annotations of spots, this function utilizes various methods that
 can be selected based on the type of the target variable.
 }
 \details{
-Except for DESeq2 method, this calculation is performed separately for each feature in the given data.
+Except for DESeq2 method, this calculation is performed separately for each feature in the given data. 
+When there are more than two groups, differential analysis compares each group against the combined remaining groups.
 }
