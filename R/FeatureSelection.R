@@ -182,7 +182,6 @@ MarkerTest <- function(data,
 DESeq2DETest <- function(
     data,
     phenotype,
-    contrast,
     verbose = TRUE
 ) {
   if (!PackageCheck('DESeq2', error = FALSE)) {
@@ -201,7 +200,7 @@ DESeq2DETest <- function(
   dds1 <- DESeq2::nbinomWaldTest(object = dds1)
   res <- DESeq2::results(
     object = dds1,
-    contrast = contrast,
+    contrast = c("group", 1, 0),
     alpha = 0.05
   )
   colnames(res)[which(colnames(res)=="pvalue")] <- "p.value"
@@ -245,8 +244,7 @@ CorrTest <- function(data,
 #' @param family a character string naming a family function when \code{method} is "glm".
 #' @param cor.method Method used for correlation coefficient. One of "pearson",
 #'   "kendall", or "spearman", can be abbreviated.
-#' @param deseq2_contrast Argument specifies the groups for comparison. It is
-#'   passed to \code{results} function in \pkg{DESeq2}.
+#' @param deseq2_contrast The numerator level for fold change; only used for two groups are included. 
 #' @param p.adj Logical value indicating whether to adjust the p values.
 #' @param adj.method Method to adjust p values. It should be one of
 #'   \code{c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY","fdr",
@@ -260,7 +258,8 @@ CorrTest <- function(data,
 #' @param logFC A cutoff of log(fold change). Default is 0.5
 #' @param verbose Logical value. If TRUE, print messages.
 #' @details
-#' Except for DESeq2 method, this calculation is performed separately for each feature in the given data.
+#' Except for DESeq2 method, this calculation is performed separately for each feature in the given data. 
+#' When there are more than two groups, differential analysis compares each group against the combined remaining groups.
 #' @return A data.frame with features as rows, and associated statistics as
 #'   columns (p-values, AUC power, etc.), depending on the methods.
 #' @export
@@ -301,6 +300,8 @@ PhenoAssoFeatures <- function(data,
         label <- ifelse(phenotype == x, 1, 0)
         return(list(label))
         })
+    }else {
+      label.lt[[phenotype]] <- ifelse(phenotype == deseq2_contrast, 1, 0)
     }
   }
   res.lt <- list()
@@ -328,7 +329,6 @@ PhenoAssoFeatures <- function(data,
                                               my_sapply = my_sapply),
                         "deseq2" = DESeq2DETest(data = data,
                                                 phenotype = phenotype,
-                                                contrast = deseq2_contrast,
                                                 verbose = verbose),
                         "cor" = CorrTest(data = data,
                                          phenotype = phenotype,
@@ -362,7 +362,7 @@ PhenoAssoFeatures <- function(data,
     if ("log2FoldChange" %in% colnames(asso_res)){
       asso_res <- asso_res[abs(asso_res[, "log2FoldChange"]) >= logFC,]
     }
-    asso_res <- cbind(features = rownames(asso_res), asso_res)
+    asso_res <- cbind(features = rownames(asso_res), data.frame(asso_res))
     res.lt[[n]] <- asso_res
   }
   if (length(res.lt) == 1) {
