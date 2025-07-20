@@ -125,7 +125,6 @@ SePreprocess <- function(se,
                       verbose = verbose)
   }else{
     se <- NormalizeData(object = se,
-                      normalization.method = norm.method,
                       verbose = verbose)
     se <- FindVariableFeatures(object = se,
                                nfeatures = variable.features.n,
